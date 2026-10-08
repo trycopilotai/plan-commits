@@ -7,11 +7,14 @@
 
 Add --isolation-root <dir> for a run made in a fresh temporary
 directory that holds both the fixture and the plugin directory.
+Add --calls-out <file> to also write every tool call's name and
+full, uncut arguments as JSON, with the same replacements, so a
+check can read what the transcript cuts.
 
 Writes the prompt, every tool call (name and arguments, each
 argument string cut at LIMIT characters), each call's status
-where the raw output records it, and the final message
-verbatim. The only edits, in this order, each applied to a
+where the raw output records it, and the final message,
+copied except for the replacements below. The only edits, in this order, each applied to a
 whole path prefix and never inside a longer name: each
 --isolation-root (also in its form without a leading
 /private) becomes /iso, each --plugin-root (the directory
@@ -87,11 +90,12 @@ def claude_code(events):
         "%s %s\n  status: %s" % (name, arguments(given), results.get(ident, "unknown"))
         for ident, name, given in calls
     ]
-    return header, lines, final
+    full = [{"name": name, "arguments": given} for _ident, name, given in calls]
+    return header, lines, final, full
 
 
 def codex(events):
-    lines, final = [], None
+    lines, final, full = [], None, []
     for event in events:
         if event.get("type") != "item.completed":
             continue
@@ -101,36 +105,17 @@ def codex(events):
                 "command_execution %s\n  status: %s, exit %s"
                 % (arguments({"command": item["command"]}), item.get("status"), item.get("exit_code"))
             )
+            full.append({"name": "command_execution", "arguments": {"command": item["command"]}})
         elif item.get("type") == "agent_message":
             final = item["text"]
         elif item.get("type") not in ("reasoning",):
             lines.append("%s %s" % (item.get("type"), arguments(item)))
-    return ["client: Codex"], lines, final
+            full.append({"name": item.get("type"), "arguments": item})
+    return ["client: Codex"], lines, final, full
 
 
-def main(argv=None) -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--client", choices=("claude-code", "codex"), required=True)
-    parser.add_argument("--prompt", required=True)
-    parser.add_argument("--root", required=True)
-    parser.add_argument("--isolation-root", action="append", default=[])
-    parser.add_argument("--plugin-root", action="append", default=[])
-    parser.add_argument("--home", required=True)
-    parser.add_argument("--hostname", action="append", default=[])
-    parser.add_argument("raw")
-    options = parser.parse_args(argv)
-    with open(options.raw, encoding="utf-8") as stream:
-        events = [json.loads(line) for line in stream if line.strip()]
-    with open(options.prompt, encoding="utf-8") as stream:
-        prompt = stream.read().rstrip("\n")
-    render = claude_code if options.client == "claude-code" else codex
-    header, lines, final = render(events)
-    text = "\n".join(
-        header
-        + ["", "## prompt", "", prompt, "", "## tool calls", ""]
-        + ["%d. %s" % (number, line) for number, line in enumerate(lines, 1)]
-        + ["", "## final message", "", final if final is not None else "(none)", ""]
-    )
+def replace(text: str, options) -> str:
+    """Apply the declared replacements, in order."""
     for path in options.isolation_root:
         forms = [path]
         if path.startswith("/private/"):
@@ -149,7 +134,38 @@ def main(argv=None) -> int:
             lambda match: "host",
             text,
         )
-    sys.stdout.write(text)
+    return text
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--client", choices=("claude-code", "codex"), required=True)
+    parser.add_argument("--prompt", required=True)
+    parser.add_argument("--root", required=True)
+    parser.add_argument("--isolation-root", action="append", default=[])
+    parser.add_argument("--plugin-root", action="append", default=[])
+    parser.add_argument("--home", required=True)
+    parser.add_argument("--hostname", action="append", default=[])
+    parser.add_argument("--calls-out")
+    parser.add_argument("raw")
+    options = parser.parse_args(argv)
+    with open(options.raw, encoding="utf-8") as stream:
+        events = [json.loads(line) for line in stream if line.strip()]
+    with open(options.prompt, encoding="utf-8") as stream:
+        prompt = stream.read().rstrip("\n")
+    render = claude_code if options.client == "claude-code" else codex
+    header, lines, final, full = render(events)
+    text = "\n".join(
+        header
+        + ["", "## prompt", "", prompt, "", "## tool calls", ""]
+        + ["%d. %s" % (number, line) for number, line in enumerate(lines, 1)]
+        + ["", "## final message", "", final if final is not None else "(none)", ""]
+    )
+    sys.stdout.write(replace(text, options))
+    if options.calls_out:
+        calls = json.dumps(full, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
+        with open(options.calls_out, "w", encoding="utf-8") as stream:
+            stream.write(replace(calls, options))
     return 0
 
 

@@ -416,18 +416,52 @@ class InvocationEvidenceTest(unittest.TestCase):
         for text in by_product.values():
             final = text.split("## final message", 1)[1]
             self.assertIn("Status: awaiting operator approval.", final)
-            calls = text.split("## tool calls", 1)[1].split("## final message", 1)[0]
-            for command in ("git add", "git commit", "git push"):
-                self.assertNotIn(command, calls)
+
+    def calls(self, entry: dict) -> list:
+        return json.loads(read(ROOT / entry["calls"]["path"]))
+
+    def test_calls_files_match_the_manifest_and_the_transcripts(self) -> None:
+        named = sorted(e["calls"]["path"] for e in self.published())
+        on_disk = sorted(
+            path.relative_to(ROOT).as_posix()
+            for path in (ROOT / "evidence" / "transcripts").glob("*-invocation.calls.json")
+        )
+        self.assertEqual(named, on_disk)
+        marker = re.compile(r"\.\.\.\[\d+ more characters\]$")
+        for entry in self.published():
+            path = ROOT / entry["calls"]["path"]
+            self.assertEqual(entry["calls"]["sha256"], sha256(path))
+            self.assertEqual(path.name, Path(entry["transcript"]["path"]).name.replace(".txt", ".calls.json"))
+            shown = re.findall(r"^\d+\. (\S+) (\{.*\})$", read(ROOT / entry["transcript"]["path"]), flags=re.M)
+            full = self.calls(entry)
+            self.assertEqual([name for name, _ in shown], [call["name"] for call in full])
+            for (_name, given), call in zip(shown, full):
+                cut = json.loads(given)
+                self.assertEqual(sorted(cut), sorted(call["arguments"]))
+                for key, value in cut.items():
+                    whole = call["arguments"][key]
+                    if isinstance(value, str) and marker.search(value):
+                        self.assertTrue(whole.startswith(marker.sub("", value)), key)
+                        self.assertGreater(len(whole), len(marker.sub("", value)))
+                    else:
+                        self.assertEqual(value, whole, key)
+
+    def test_no_recorded_call_stages_commits_or_pushes(self) -> None:
+        for entry in self.published():
+            for call in self.calls(entry):
+                text = json.dumps(call["arguments"])
+                for command in ("git add", "git commit", "git push"):
+                    self.assertNotIn(command, text)
 
     def test_transcripts_carry_only_replaced_paths(self) -> None:
         for entry in self.published():
             text = read(ROOT / entry["transcript"]["path"])
             self.assertIn(entry["prompt"].rstrip("\n"), text)
-            self.assertIsNone(ABSOLUTE_PATH.search(text))
-            users = "Use" + "rs"
-            for leak in ("-%s-" % users, "claude-5" + "01"):
-                self.assertNotIn(leak, text)
+            for checked in (text, read(ROOT / entry["calls"]["path"])):
+                self.assertIsNone(ABSOLUTE_PATH.search(checked))
+                users = "Use" + "rs"
+                for leak in ("-%s-" % users, "claude-5" + "01"):
+                    self.assertNotIn(leak, checked)
 
     def test_readme_links_both_transcripts_and_names_the_transforms(self) -> None:
         section = read(README).split("### Agent invocations", 1)[1].split("\n## ", 1)[0]
@@ -532,6 +566,23 @@ class RendererTest(unittest.TestCase):
         self.assertIn("...[104 more characters]", text)
         self.assertIn("  status: completed, exit 0", text)
         self.assertTrue(text.endswith("## final message\n\nDone.\n"))
+
+    def test_calls_out_keeps_full_arguments_with_the_same_replacements(self) -> None:
+        long = "git status " + "y" * 400 + " /h/me/fix/a.py"
+        with tempfile.TemporaryDirectory() as out:
+            calls = Path(out) / "calls.json"
+            text = self.render(
+                "claude-code",
+                [{"type": "assistant", "message": {"content": [
+                    {"type": "tool_use", "id": "t0", "name": "Bash", "input": {"command": long}}]}}],
+                "--root", "/h/me/fix", "--calls-out", str(calls),
+            )
+            written = json.loads(calls.read_text(encoding="utf-8"))
+        self.assertIn("more characters]", text)
+        self.assertEqual(
+            written,
+            [{"name": "Bash", "arguments": {"command": long.replace("/h/me/fix", "/work")}}],
+        )
 
 
 class DemoTest(unittest.TestCase):

@@ -1,0 +1,20 @@
+[
+ {
+  "arguments": {
+   "skill": "plan-commits:plan-commits"
+  },
+  "name": "Skill"
+ },
+ {
+  "arguments": {
+   "command": "git status --porcelain=v1 --untracked-files=all && echo --- && ls -la && echo --- && cat AGENTS.md 2>/dev/null || echo \"no AGENTS.md\""
+  },
+  "name": "Bash"
+ },
+ {
+  "arguments": {
+   "command": "echo \"=== CHANGELOG.md ===\" && cat CHANGELOG.md\necho \"=== git diff wordcount.py ===\" && git diff wordcount.py\necho \"=== git diff --numstat ===\" && git diff --numstat\necho \"=== numstat cached (new file CHANGELOG.md) ===\" && git diff --cached --numstat -- CHANGELOG.md\necho \"=== wc -l tests/test_wordcount.py ===\" && wc -l tests/test_wordcount.py\necho \"=== tests/test_wordcount.py content ===\" && cat tests/test_wordcount.py\necho \"=== wordcount.py full ===\" && cat wordcount.py\necho \"=== .gitignore ===\" && cat .gitignore\necho \"=== README.md ===\" && cat README.md"
+  },
+  "name": "Bash"
+ }
+]

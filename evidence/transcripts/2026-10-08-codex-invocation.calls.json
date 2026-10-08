@@ -1,0 +1,20 @@
+[
+ {
+  "arguments": {
+   "command": "/bin/zsh -lc \"pwd && sed -n '1,260p' .agents/skills/plan-commits/SKILL.md && rg --files -g 'AGENTS.md' -g '\"'!**/.git/**'\"'\""
+  },
+  "name": "command_execution"
+ },
+ {
+  "arguments": {
+   "command": "/bin/zsh -lc 'git status --porcelain=v1 --untracked-files=all && git diff --numstat && git diff --cached --numstat'"
+  },
+  "name": "command_execution"
+ },
+ {
+  "arguments": {
+   "command": "/bin/zsh -lc \"git log -8 --pretty=format:'%s' && git diff --cached -- CHANGELOG.md && git diff -- wordcount.py && wc -l tests/test_wordcount.py && sed -n '1,240p' tests/test_wordcount.py && sed -n '1,240p' wordcount.py && sed -n '1,200p' CHANGELOG.md\""
+  },
+  "name": "command_execution"
+ }
+]

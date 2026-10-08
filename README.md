@@ -51,7 +51,8 @@ is the [worked example](examples/worked-example.md).
   tests check that way is the worked example; for the two
   agent invocations, the tests check only that each
   transcript ends at the approval section and that no
-  recorded call runs `git add`, `git commit` or `git push`.
+  recorded call, read uncut from its `.calls.json` file,
+  runs `git add`, `git commit` or `git push`.
 - Neither install block below was run, from a shell or in
   a Claude Code or Codex session. The agent invocations
   loaded the skill from a plugin directory (Claude Code) and
@@ -247,7 +248,7 @@ fails.
 
 ```sh
 set -eu
-release=v0.1.2
+release=v0.1.3
 install_target="$HOME/.claude/skills/plan-commits"
 install_parent="$(dirname "$install_target")"
 mkdir -p "$install_parent"
@@ -284,7 +285,7 @@ the block above is `install_target`.
 
 ```sh
 set -eu
-release=v0.1.2
+release=v0.1.3
 install_target="$HOME/.agents/skills/plan-commits"
 install_parent="$(dirname "$install_target")"
 mkdir -p "$install_parent"
@@ -389,9 +390,13 @@ under Known limits, or what it does after approval.
 renders each transcript from the client's raw JSON output,
 which is not committed; its SHA-256 is in the manifest. It
 writes the prompt, each tool call's name, arguments and
-status, and the final message verbatim, and cuts any
-argument longer than 300 characters, marking the cut
-`...[N more characters]`. Its only edits are path and name
+status, and the final message, copied except for the path
+and hostname replacements below, and cuts any argument
+longer than 300 characters, marking the cut
+`...[N more characters]`. Beside each transcript, a
+`.calls.json` file holds every tool call's name and full,
+uncut arguments, with the same replacements; the manifest
+records its SHA-256. Its only edits are path and name
 replacements, each declared in the manifest:
 `replace-isolation-root` (Codex only, applied first),
 `replace-plugin-root`, `replace-capture-root`,

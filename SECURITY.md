@@ -47,8 +47,9 @@ private channel.
   preview PNG and its stamp.
   `scripts/render_invocation.py` reads a client's raw JSON
   output and a prompt file, both named on its command line,
-  and writes a transcript to standard output; it runs
-  nothing and writes no file. `tests/test_worked_example.py`
+  writes a transcript to standard output and, with
+  `--calls-out`, the tool calls to the file that option
+  names; it runs nothing else and writes no other file. `tests/test_worked_example.py`
   reads files. `tests/test_integrations.py` runs `git`
   against the repository root, builds the fixture repository
   and runs the manifest's commands in a temporary directory

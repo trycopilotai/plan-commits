@@ -83,6 +83,10 @@
         "path": "evidence/transcripts/2026-10-08-claude-code-invocation.txt",
         "sha256": "f01907712574c310754f51701bc3141621ff17fdeebebec6405190524be3f32b"
       },
+      "calls": {
+        "path": "evidence/transcripts/2026-10-08-claude-code-invocation.calls.json",
+        "sha256": "d6b711041980a6dda567ae08bb0d27703de5ac7061f4cf6f6a6f857e64cd69cb"
+      },
       "raw_output_sha256": "cd81060a9a1ba7c90a5f295f6d311277ec390994f91fd866f27fc5c025205aa4",
       "renderer": "scripts/render_invocation.py",
       "transforms": [
@@ -111,7 +115,7 @@
       "published": true,
       "outcome": "Loaded the skill (Skill plan-commits:plan-commits), ran git status, git diff --numstat, git diff --cached --numstat for the staged new file and wc -l for the untracked one, and wrote a three-commit plan with those counts (15/0/5, 15/0/0, 5/0/0), all labelled semantic, ending with the approval section; it staged and committed nothing.",
       "fixture_state_after": "Checked after the run with git log and git status in the fixture: the same single commit, the same three status lines (CHANGELOG.md staged, wordcount.py modified, tests/test_wordcount.py untracked), and the remote unchanged; nothing was committed or staged beyond the starting state.",
-      "rendering": "Besides the transforms, scripts/render_invocation.py cuts every tool-call argument string longer than 300 characters and marks the cut as ...[N more characters]. It writes only each call's name, arguments and status, not tool output."
+      "rendering": "Besides the transforms, scripts/render_invocation.py cuts every tool-call argument string longer than 300 characters and marks the cut as ...[N more characters]. It writes only each call's name, arguments and status, not tool output, and the final message, copied except for the declared path and hostname replacements. The calls file holds each call's name and full, uncut arguments, with the same replacements."
     },
     {
       "product": "Codex",
@@ -126,6 +130,10 @@
       "transcript": {
         "path": "evidence/transcripts/2026-10-08-codex-invocation.txt",
         "sha256": "b4a7f4442cafe5acae11d8f756f586d56c1b9010499907247a277cf4768f9f3b"
+      },
+      "calls": {
+        "path": "evidence/transcripts/2026-10-08-codex-invocation.calls.json",
+        "sha256": "fe021e65c295cc450f048778816a80dda152e01e609ff672c7cadcf4eba44a1e"
       },
       "raw_output_sha256": "022dc693e30dfdac7b2e8424bd3ec89d9ed4f7287cae7718398a910687e98521",
       "renderer": "scripts/render_invocation.py",
@@ -160,7 +168,7 @@
       "isolation": "A re-run in isolation: a fresh temporary directory holding only a clone of the v0.1.0 tag and the fixture beside it, after an earlier Codex run searched outside the fixture (the unpublished entry below).",
       "outcome": "Read .agents/skills/plan-commits/SKILL.md, ran git status, git diff --numstat, git diff --cached --numstat and wc -l, and wrote a three-commit plan with those counts (5/0/0, 15/0/0, 15/0/5), all labelled semantic, ending with the approval section; it staged and committed nothing. Its first call exited 1 because rg found no AGENTS.md.",
       "fixture_state_after": "Checked after the run with git log and git status in the fixture: the same single commit, the same three status lines (CHANGELOG.md staged, wordcount.py modified, tests/test_wordcount.py untracked), and the remote unchanged; nothing was committed or staged beyond the starting state.",
-      "rendering": "Besides the transforms, scripts/render_invocation.py cuts every tool-call argument string longer than 300 characters and marks the cut as ...[N more characters]. It writes only each call's name, arguments and status, not tool output."
+      "rendering": "Besides the transforms, scripts/render_invocation.py cuts every tool-call argument string longer than 300 characters and marks the cut as ...[N more characters]. It writes only each call's name, arguments and status, not tool output, and the final message, copied except for the declared path and hostname replacements. The calls file holds each call's name and full, uncut arguments, with the same replacements."
     },
     {
       "product": "Codex",
