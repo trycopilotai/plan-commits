@@ -11,16 +11,33 @@ Add --calls-out <file> to also write every tool call's name and
 full, uncut arguments as JSON, with the same replacements, so a
 check can read what the transcript cuts.
 
-Writes the prompt, every tool call (name and arguments, each
-argument string cut at LIMIT characters), each call's status
-where the raw output records it, and the final message,
-copied except for the replacements below. The only edits, in this order, each applied to a
-whole path prefix and never inside a longer name: each
---isolation-root (also in its form without a leading
-/private) becomes /iso, each --plugin-root (the directory
-the client loaded the skill from) becomes /plugin, the fixture's absolute path /work, a
-client scratch directory /private/tmp/claude-<uid>/<slug>
-/scratch, the home directory ~, and each --hostname host.
+What it writes, and every way it departs from the raw output:
+
+- a header: the client, and for Claude Code the version and
+  model from the init event;
+- the prompt file, with trailing newlines removed;
+- the tool calls, numbered. Claude Code: each tool_use's
+  name and input, and a status of ok or error from the
+  matching tool_result, or unknown if there is none. Codex:
+  each completed command_execution's command, status and
+  exit code; each other completed item, except reasoning
+  items and agent messages, written whole;
+- the final message: Claude Code's result event, or Codex's
+  last agent message; "(none)" if there is neither. Earlier
+  Codex agent messages and all reasoning are left out;
+- arguments re-serialised as JSON with sorted keys, and each
+  string in them longer than LIMIT characters cut there and
+  marked ...[N more characters] (not in --calls-out);
+- no tool output, and no event of any other kind.
+
+Then, over the whole text, these replacements, in this
+order, each applied to a whole path prefix and never inside
+a longer name: each --isolation-root (also in its form
+without a leading /private) becomes /iso, each --plugin-root
+(the directory the client loaded the skill from) /plugin,
+the fixture's absolute path /work, a client scratch
+directory /private/tmp/claude-<uid>/<slug> /scratch, the
+home directory ~, and each --hostname host.
 Standard library only; output depends only on the inputs.
 """
 

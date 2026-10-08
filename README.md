@@ -48,11 +48,9 @@ is the [worked example](examples/worked-example.md).
   summarises changes well has not been measured.
 - No test checks the counts, groups or summaries of a plan
   written by an agent that invoked the skill. The plan the
-  tests check that way is the worked example; for the two
-  agent invocations, the tests check only that each
-  transcript ends at the approval section and that no
-  recorded call, read uncut from its `.calls.json` file,
-  runs `git add`, `git commit` or `git push`.
+  tests check that way is the worked example. What the
+  tests do check of the two agent invocations is listed
+  under Agent invocations.
 - Neither install block below was run, from a shell or in
   a Claude Code or Codex session. The agent invocations
   loaded the skill from a plugin directory (Claude Code) and
@@ -248,7 +246,7 @@ fails.
 
 ```sh
 set -eu
-release=v0.1.3
+release=v0.1.4
 install_target="$HOME/.claude/skills/plan-commits"
 install_parent="$(dirname "$install_target")"
 mkdir -p "$install_parent"
@@ -285,7 +283,7 @@ the block above is `install_target`.
 
 ```sh
 set -eu
-release=v0.1.3
+release=v0.1.4
 install_target="$HOME/.agents/skills/plan-commits"
 install_parent="$(dirname "$install_target")"
 mkdir -p "$install_parent"
@@ -388,20 +386,65 @@ under Known limits, or what it does after approval.
 
 [`scripts/render_invocation.py`](scripts/render_invocation.py)
 renders each transcript from the client's raw JSON output,
-which is not committed; its SHA-256 is in the manifest. It
-writes the prompt, each tool call's name, arguments and
-status, and the final message, copied except for the path
-and hostname replacements below, and cuts any argument
-longer than 300 characters, marking the cut
-`...[N more characters]`. Beside each transcript, a
-`.calls.json` file holds every tool call's name and full,
-uncut arguments, with the same replacements; the manifest
-records its SHA-256. Its only edits are path and name
-replacements, each declared in the manifest:
-`replace-isolation-root` (Codex only, applied first),
-`replace-plugin-root`, `replace-capture-root`,
-`replace-scratch-root`, `replace-home` and
-`replace-hostname`.
+which is not committed; its SHA-256 is in the manifest. The
+transcript differs from the raw output in these ways:
+
+- it keeps a header (the client; for Claude Code also the
+  version and model), the prompt, the tool calls and the
+  final message, and leaves out tool output, reasoning,
+  Codex agent messages other than the last, and every other
+  event;
+- each Claude Code call is its tool name, its input and a
+  status of `ok`, `error` or `unknown`; each Codex command
+  is its command, status and exit code, and any other
+  completed Codex item is written whole;
+- arguments are re-serialised as JSON with sorted keys, and
+  any argument string longer than 300 characters is cut
+  there and marked `...[N more characters]`;
+- the whole text, final message included, then goes through
+  the path and name replacements declared in the manifest:
+  `replace-isolation-root` (Codex only, applied first),
+  `replace-plugin-root`, `replace-capture-root`,
+  `replace-scratch-root`, `replace-home` and
+  `replace-hostname`.
+
+Beside each transcript, a `.calls.json` file holds each tool
+call's name and full, uncut arguments, with the same
+replacements; the manifest records its SHA-256.
+
+The repository suite checks these things about the
+invocations:
+
+- the manifest lists one published run per client, each
+  with a version, model, outcome, raw-output SHA-256, the
+  renderer's path and the transform names, and a prompt
+  that holds the invocation text and asks the agent to stay
+  inside the directory;
+- the unpublished run has a raw-output SHA-256 and an
+  outcome, and no transcript;
+- the transcripts and `.calls.json` files on disk are the
+  ones the manifest names, with the SHA-256 it records;
+- the Claude Code transcript shows a `Skill` call for
+  `plan-commits:plan-commits`, and the Codex transcript
+  names `.agents/skills/plan-commits/SKILL.md`;
+- the text after each transcript's `## final message`
+  heading contains `Status: awaiting operator approval.`;
+  the test does not check where in the message it falls;
+- each `.calls.json` file lists the same calls as its
+  transcript, and each cut argument is the start of the
+  full one;
+- no call's full arguments contain `git add`, `git commit`
+  or `git push`;
+- no transcript or `.calls.json` file contains a path
+  under a home directory, `/private/`, `/var/folders/` or
+  `/tmp/`;
+- this section links both transcripts and names each
+  transform, and the manifest's rendering note names the
+  renderer's cut length.
+
+Separately, the renderer is run on small made-up inputs to
+check the replacements, the isolation root, the Codex exit
+status, the cut and the `.calls.json` output.
 
 `make check` runs two suites.
 [`tests/test_worked_example.py`](tests/test_worked_example.py)
