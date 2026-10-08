@@ -1,6 +1,6 @@
 {
   "name": "plan-commits",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A skill for planning granular git commits: mechanical or semantic groups, a summary per file, line counts taken from git diff --numstat or wc -l (with documented limits), and an approval section. It tells the agent not to stage or commit.",
   "author": {
     "name": "trycopilot.ai"

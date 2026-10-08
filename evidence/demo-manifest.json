@@ -68,5 +68,111 @@
     "edited": false,
     "transforms": [],
     "note": "scripts/record_session.py wrote each command line, each echo line (which is written, not run) and each exit status line from the command's exit status; everything between is the output of git or wc, unedited."
-  }
+  },
+  "invocations": [
+    {
+      "product": "Claude Code",
+      "version": "2.1.220",
+      "model": "claude-sonnet-5",
+      "skill_source": "This repository at the v0.1.0 tag, passed as --plugin-dir",
+      "invocation": "/plan-commits",
+      "prompt": "Use /plan-commits to plan commits for the uncommitted changes in the working tree of this repository. Stay inside this directory.",
+      "fixture": "A synthetic git repository holding a one-file Python word counter (README.md, wordcount.py, .gitignore) committed once, with three uncommitted changes: wordcount.py modified (tracked, 15 lines added and 5 deleted by git diff --numstat), CHANGELOG.md new and staged (5 lines by git diff --cached --numstat), and tests/test_wordcount.py new and untracked (15 lines by wc -l). No AGENTS.md. One local bare remote only.",
+      "date": "2026-10-08",
+      "transcript": {
+        "path": "evidence/transcripts/2026-10-08-claude-code-invocation.txt",
+        "sha256": "f01907712574c310754f51701bc3141621ff17fdeebebec6405190524be3f32b"
+      },
+      "raw_output_sha256": "cd81060a9a1ba7c90a5f295f6d311277ec390994f91fd866f27fc5c025205aa4",
+      "renderer": "scripts/render_invocation.py",
+      "transforms": [
+        {
+          "name": "replace-plugin-root",
+          "what": "The absolute path of the --plugin-dir directory the client loaded the skill from was replaced with /plugin."
+        },
+        {
+          "name": "replace-capture-root",
+          "what": "The fixture's absolute path was replaced with /work."
+        },
+        {
+          "name": "replace-scratch-root",
+          "what": "A client scratch directory prefix /private/tmp/claude-<uid>/<slug> would be replaced with /scratch; the raw output contained none."
+        },
+        {
+          "name": "replace-home",
+          "what": "The home directory was replaced with ~."
+        },
+        {
+          "name": "replace-hostname",
+          "what": "The recording machine's hostname was replaced with host."
+        }
+      ],
+      "invoked_the_skill": true,
+      "published": true,
+      "outcome": "Loaded the skill (Skill plan-commits:plan-commits), ran git status, git diff --numstat, git diff --cached --numstat for the staged new file and wc -l for the untracked one, and wrote a three-commit plan with those counts (15/0/5, 15/0/0, 5/0/0), all labelled semantic, ending with the approval section; it staged and committed nothing.",
+      "fixture_state_after": "Checked after the run with git log and git status in the fixture: the same single commit, the same three status lines (CHANGELOG.md staged, wordcount.py modified, tests/test_wordcount.py untracked), and the remote unchanged; nothing was committed or staged beyond the starting state.",
+      "rendering": "Besides the transforms, scripts/render_invocation.py cuts every tool-call argument string longer than 300 characters and marks the cut as ...[N more characters]. It writes only each call's name, arguments and status, not tool output."
+    },
+    {
+      "product": "Codex",
+      "version": "0.146.0",
+      "model": "gpt-5.6-sol",
+      "model_source": "Codex's local session log for this thread; the --json output does not name the model.",
+      "skill_source": "skills/plan-commits/ of a fresh clone of this repository at the v0.1.0 tag, copied into the fixture's .agents/skills/ and committed there",
+      "invocation": "$plan-commits",
+      "prompt": "Use $plan-commits to plan commits for the uncommitted changes in the working tree of this repository. Stay inside this directory.",
+      "fixture": "A synthetic git repository holding a one-file Python word counter (README.md, wordcount.py, .gitignore) committed once together with the skill under .agents/skills/plan-commits/, with three uncommitted changes: wordcount.py modified (tracked, 15 lines added and 5 deleted by git diff --numstat), CHANGELOG.md new and staged (5 lines by git diff --cached --numstat), and tests/test_wordcount.py new and untracked (15 lines by wc -l). No AGENTS.md. One local bare remote only.",
+      "date": "2026-10-08",
+      "transcript": {
+        "path": "evidence/transcripts/2026-10-08-codex-invocation.txt",
+        "sha256": "b4a7f4442cafe5acae11d8f756f586d56c1b9010499907247a277cf4768f9f3b"
+      },
+      "raw_output_sha256": "022dc693e30dfdac7b2e8424bd3ec89d9ed4f7287cae7718398a910687e98521",
+      "renderer": "scripts/render_invocation.py",
+      "transforms": [
+        {
+          "name": "replace-isolation-root",
+          "what": "The absolute path of the fresh temporary directory the run was made in, which held the fixture and a clone of the v0.1.0 tag, would be replaced with /iso before every other transform; it appeared in the raw output only inside a command's output, which the transcript does not include."
+        },
+        {
+          "name": "replace-plugin-root",
+          "what": "The absolute path of the fixture's .agents/skills/plan-commits directory, which Codex loaded the skill from, would be replaced with /plugin; the rendered calls name it only by a relative path."
+        },
+        {
+          "name": "replace-capture-root",
+          "what": "The fixture's absolute path was replaced with /work."
+        },
+        {
+          "name": "replace-scratch-root",
+          "what": "A client scratch directory prefix /private/tmp/claude-<uid>/<slug> would be replaced with /scratch; the raw output contained none."
+        },
+        {
+          "name": "replace-home",
+          "what": "The home directory was replaced with ~."
+        },
+        {
+          "name": "replace-hostname",
+          "what": "The recording machine's hostname was replaced with host."
+        }
+      ],
+      "invoked_the_skill": true,
+      "published": true,
+      "isolation": "A re-run in isolation: a fresh temporary directory holding only a clone of the v0.1.0 tag and the fixture beside it, after an earlier Codex run searched outside the fixture (the unpublished entry below).",
+      "outcome": "Read .agents/skills/plan-commits/SKILL.md, ran git status, git diff --numstat, git diff --cached --numstat and wc -l, and wrote a three-commit plan with those counts (5/0/0, 15/0/0, 15/0/5), all labelled semantic, ending with the approval section; it staged and committed nothing. Its first call exited 1 because rg found no AGENTS.md.",
+      "fixture_state_after": "Checked after the run with git log and git status in the fixture: the same single commit, the same three status lines (CHANGELOG.md staged, wordcount.py modified, tests/test_wordcount.py untracked), and the remote unchanged; nothing was committed or staged beyond the starting state.",
+      "rendering": "Besides the transforms, scripts/render_invocation.py cuts every tool-call argument string longer than 300 characters and marks the cut as ...[N more characters]. It writes only each call's name, arguments and status, not tool output."
+    },
+    {
+      "product": "Codex",
+      "version": "0.146.0",
+      "model": "gpt-5.6-sol",
+      "invocation": "$plan-commits",
+      "prompt": "Use $plan-commits to plan commits for the uncommitted changes in the working tree of this repository. Stay inside this directory.",
+      "date": "2026-10-08",
+      "published": false,
+      "invoked_the_skill": true,
+      "raw_output_sha256": "ee3da09a5dcb1ffb6d284243e5e82b11323f01f187261e23ee5534a2c9aed1c6",
+      "outcome": "Contaminated by its environment and not published: it read .agents/skills/plan-commits/SKILL.md, then ran find .. -name AGENTS.md, a search outside the fixture it was told to stay in, and wrote a two-commit plan with the same counts and the approval section; it staged and committed nothing."
+    }
+  ]
 }

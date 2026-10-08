@@ -24,6 +24,7 @@ import re
 import struct
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -39,6 +40,14 @@ MANIFEST = ROOT / "evidence" / "demo-manifest.json"
 EXAMPLE = ROOT / "examples" / "worked-example.md"
 FIXTURE = ROOT / "examples" / "fixture"
 RECORDER = ROOT / "scripts" / "record_session.py"
+RENDERER = ROOT / "scripts" / "render_invocation.py"
+INVOCATION_TRANSFORMS = [
+    "replace-plugin-root",
+    "replace-capture-root",
+    "replace-scratch-root",
+    "replace-home",
+    "replace-hostname",
+]
 CLAIM = "Line counts come from git diff --numstat and wc -l."
 COMMANDS = [
     "git status --porcelain=v1 --untracked-files=all",
@@ -290,7 +299,7 @@ class ReadmeTest(unittest.TestCase):
     def test_readme_says_what_was_not_measured(self) -> None:
         text = " ".join(read(README).split())
         self.assertIn("Not measured, stated up front.", text)
-        self.assertIn("No agent invoked the skill to produce the evidence here.", text)
+        self.assertIn("No agent invoked the skill for the demo below", text)
         self.assertIn("has not been measured", text)
         self.assertIn("Neither install block below was run", text)
 
@@ -350,6 +359,179 @@ class EvidenceTest(unittest.TestCase):
         fresh, failed = recorder.capture(COMMANDS)
         self.assertFalse(failed, fresh)
         self.assertEqual(spacing_free(fresh), spacing_free(read(TRANSCRIPT)))
+
+
+class InvocationEvidenceTest(unittest.TestCase):
+    def invocations(self) -> list:
+        return json.loads(read(MANIFEST))["invocations"]
+
+    def published(self) -> list:
+        return [entry for entry in self.invocations() if entry["published"]]
+
+    def test_one_published_invocation_per_declared_client(self) -> None:
+        entries = self.published()
+        self.assertEqual(
+            [(e["product"], e["invocation"]) for e in entries],
+            [("Claude Code", "/" + NAME), ("Codex", "$" + NAME)],
+        )
+        for entry in entries:
+            self.assertIs(entry["invoked_the_skill"], True)
+            self.assertTrue(entry["version"] and entry["model"] and entry["outcome"])
+            self.assertRegex(entry["raw_output_sha256"], r"^[0-9a-f]{64}$")
+            self.assertEqual(entry["renderer"], RENDERER.relative_to(ROOT).as_posix())
+            names = [t["name"] for t in entry["transforms"]]
+            if entry["product"] == "Codex":
+                self.assertEqual(names[0], "replace-isolation-root")
+                names = names[1:]
+            self.assertEqual(names, INVOCATION_TRANSFORMS)
+            self.assertIn(entry["invocation"], entry["prompt"])
+            self.assertIn("Stay inside this directory.", entry["prompt"])
+
+    def test_unpublished_runs_keep_a_hash_and_an_outcome(self) -> None:
+        hidden = [entry for entry in self.invocations() if not entry["published"]]
+        self.assertEqual(len(hidden), 1)
+        for entry in hidden:
+            self.assertIs(entry["published"], False)
+            self.assertRegex(entry["raw_output_sha256"], r"^[0-9a-f]{64}$")
+            self.assertTrue(entry["outcome"])
+            self.assertNotIn("transcript", entry)
+
+    def test_transcript_set_and_hashes_match_the_manifest(self) -> None:
+        entries = self.published()
+        named = sorted(e["transcript"]["path"] for e in entries)
+        on_disk = sorted(
+            path.relative_to(ROOT).as_posix()
+            for path in (ROOT / "evidence" / "transcripts").glob("*-invocation.txt")
+        )
+        self.assertEqual(named, on_disk)
+        for entry in entries:
+            path = ROOT / entry["transcript"]["path"]
+            self.assertEqual(entry["transcript"]["sha256"], sha256(path))
+            self.assertIn(entry["date"], path.name)
+
+    def test_transcripts_show_the_skill_being_loaded_and_the_stop(self) -> None:
+        by_product = {e["product"]: read(ROOT / e["transcript"]["path"]) for e in self.published()}
+        self.assertIn('1. Skill {"skill": "plan-commits:plan-commits"}', by_product["Claude Code"])
+        self.assertIn(".agents/skills/plan-commits/SKILL.md", by_product["Codex"])
+        for text in by_product.values():
+            final = text.split("## final message", 1)[1]
+            self.assertIn("Status: awaiting operator approval.", final)
+            calls = text.split("## tool calls", 1)[1].split("## final message", 1)[0]
+            for command in ("git add", "git commit", "git push"):
+                self.assertNotIn(command, calls)
+
+    def test_transcripts_carry_only_replaced_paths(self) -> None:
+        for entry in self.published():
+            text = read(ROOT / entry["transcript"]["path"])
+            self.assertIn(entry["prompt"].rstrip("\n"), text)
+            self.assertIsNone(ABSOLUTE_PATH.search(text))
+            users = "Use" + "rs"
+            for leak in ("-%s-" % users, "claude-5" + "01"):
+                self.assertNotIn(leak, text)
+
+    def test_readme_links_both_transcripts_and_names_the_transforms(self) -> None:
+        section = read(README).split("### Agent invocations", 1)[1].split("\n## ", 1)[0]
+        for entry in self.published():
+            self.assertIn("](%s)" % entry["transcript"]["path"], section)
+        for name in ["replace-isolation-root"] + INVOCATION_TRANSFORMS:
+            self.assertIn("`%s`" % name, section)
+        self.assertIn("not a benchmark", section)
+        self.assertIn("`...[N more characters]`", section)
+
+    def test_rendering_rule_matches_the_renderer(self) -> None:
+        renderer = load(RENDERER, "render_invocation")
+        for entry in self.published():
+            self.assertIn("longer than %d characters" % renderer.LIMIT, entry["rendering"])
+
+
+class RendererTest(unittest.TestCase):
+    def render(self, client: str, events: list, *extra: str) -> str:
+        with tempfile.TemporaryDirectory() as raw:
+            prompt = Path(raw) / "prompt.txt"
+            prompt.write_text("Use /plan-commits here.\n", encoding="utf-8")
+            stream = Path(raw) / "raw.jsonl"
+            stream.write_text(
+                "".join(json.dumps(event) + "\n" for event in events), encoding="utf-8"
+            )
+            result = subprocess.run(
+                [sys.executable, str(RENDERER), "--client", client, "--prompt", str(prompt),
+                 "--home", "/h/me", *extra, str(stream)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                check=True,
+            )
+        return result.stdout
+
+    def claude_events(self, *paths: str) -> list:
+        uses = [
+            {"type": "tool_use", "id": "t%d" % i, "name": "Read", "input": {"file_path": path}}
+            for i, path in enumerate(paths)
+        ]
+        results = [
+            {"type": "tool_result", "tool_use_id": "t%d" % i, "is_error": i == 1}
+            for i in range(len(paths))
+        ]
+        return [
+            {"type": "system", "subtype": "init", "model": "m1", "claude_code_version": "9.9"},
+            {"type": "assistant", "message": {"content": uses}},
+            {"type": "user", "message": {"content": results}},
+            {"type": "result", "result": "Plan shown on box.local."},
+        ]
+
+    def test_claude_code_paths_are_replaced_as_whole_prefixes(self) -> None:
+        text = self.render(
+            "claude-code",
+            self.claude_events(
+                "/h/me/fix/wordcount.py",
+                "/h/me/fix2/x",
+                "/h/me/plug/skills/s/SKILL.md",
+                "/private/tmp/claude-1000/-h-me-slug/tasks/a.out",
+                "/h/me/other",
+            ),
+            "--root", "/h/me/fix", "--plugin-root", "/h/me/plug",
+            "--hostname", "box.local", "--hostname", "box",
+        )
+        self.assertIn("client: Claude Code 9.9\nmodel: m1\n", text)
+        self.assertIn("## prompt\n\nUse /plan-commits here.\n", text)
+        self.assertIn('1. Read {"file_path": "/work/wordcount.py"}\n  status: ok', text)
+        self.assertIn('2. Read {"file_path": "~/fix2/x"}\n  status: error', text)
+        self.assertIn('"/plugin/skills/s/SKILL.md"', text)
+        self.assertIn('"/scratch/tasks/a.out"', text)
+        self.assertIn('"~/other"', text)
+        self.assertTrue(text.endswith("## final message\n\nPlan shown on host.\n"))
+
+    def test_isolation_root_is_replaced_first_in_both_forms(self) -> None:
+        text = self.render(
+            "claude-code",
+            self.claude_events(
+                "/private/q/iso1/fix/a.py",
+                "/q/iso1/plug/SKILL.md",
+                "/q/iso1/origin.git",
+                "/q/iso10/x",
+            ),
+            "--isolation-root", "/private/q/iso1",
+            "--root", "/private/q/iso1/fix", "--plugin-root", "/private/q/iso1/plug",
+        )
+        self.assertIn('"/work/a.py"', text)
+        self.assertIn('"/plugin/SKILL.md"', text)
+        self.assertIn('"/iso/origin.git"', text)
+        self.assertIn('"/q/iso10/x"', text)
+
+    def test_codex_commands_keep_exit_status_and_are_cut_consistently(self) -> None:
+        long = "x" * 400
+        text = self.render(
+            "codex",
+            [
+                {"type": "item.completed", "item": {"type": "command_execution",
+                 "command": "cat " + long, "status": "completed", "exit_code": 0}},
+                {"type": "item.completed", "item": {"type": "agent_message", "text": "Done."}},
+            ],
+            "--root", "/h/me/fix",
+        )
+        self.assertIn("...[104 more characters]", text)
+        self.assertIn("  status: completed, exit 0", text)
+        self.assertTrue(text.endswith("## final message\n\nDone.\n"))
 
 
 class DemoTest(unittest.TestCase):

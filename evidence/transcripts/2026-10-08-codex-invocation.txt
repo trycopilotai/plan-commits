@@ -1,0 +1,44 @@
+client: Codex
+
+## prompt
+
+Use $plan-commits to plan commits for the uncommitted changes in the working tree of this repository. Stay inside this directory.
+
+## tool calls
+
+1. command_execution {"command": "/bin/zsh -lc \"pwd && sed -n '1,260p' .agents/skills/plan-commits/SKILL.md && rg --files -g 'AGENTS.md' -g '\"'!**/.git/**'\"'\""}
+  status: failed, exit 1
+2. command_execution {"command": "/bin/zsh -lc 'git status --porcelain=v1 --untracked-files=all && git diff --numstat && git diff --cached --numstat'"}
+  status: completed, exit 0
+3. command_execution {"command": "/bin/zsh -lc \"git log -8 --pretty=format:'%s' && git diff --cached -- CHANGELOG.md && git diff -- wordcount.py && wc -l tests/test_wordcount.py && sed -n '1,240p' tests/test_wordcount.py && sed -n '1,240p' wordcount.py && sed -n '1,200p' CHANGELOG.md\""}
+  status: completed, exit 0
+
+## final message
+
+Commit plan: 3 commits, 3 files
+
+1. [semantic] Document the line-counting option
+   - Label: semantic
+   - CHANGELOG.md
+     - Summary: Add an unreleased entry for the new `--lines` flag.
+     - SLOCS added/updated/deleted: 5/0/0
+
+2. [semantic] Add tests for word and line counting
+   - Label: semantic
+   - tests/test_wordcount.py
+     - Summary: Cover the existing word counter and the new line counter.
+     - SLOCS added/updated/deleted: 15/0/0
+
+3. [semantic] Add optional line-counting mode
+   - Label: semantic
+   - wordcount.py
+     - Summary: Add line counting and argparse-based handling of the input path and `--lines` flag.
+     - SLOCS added/updated/deleted: 15/0/5
+
+Approval
+
+- Status: awaiting operator approval. This skill has not staged or committed anything.
+- To approve: reply with the entry numbers to commit as planned, for example `approve 1-3` or `approve 1`.
+- To change: reply with an entry number and the change; the plan is re-rendered and approval is asked again.
+- Entries that are not approved are left uncommitted.
+- This skill does not commit. Approved entries are committed after this reply, by the operator or by a caller acting on the approval.

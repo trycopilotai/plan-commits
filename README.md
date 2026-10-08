@@ -10,10 +10,11 @@ skill text tells the agent not to stage or commit anything.
 
 Line counts come from git diff --numstat and wc -l.
 
-No agent invoked the skill for the evidence below: it is
+No agent invoked the skill for the demo below: it is
 the output of `git` and `wc` in a synthetic repository, and
 a plan that Claude, an AI model, wrote from that output
-during release preparation.
+during release preparation. Two agent invocations are
+recorded separately, under Evidence.
 
 <picture>
   <source
@@ -38,20 +39,21 @@ is the [worked example](examples/worked-example.md).
 
 **Not measured, stated up front.**
 
-- No agent invoked the skill to produce the evidence here.
-  The transcript is the output of `git` and `wc`, run from a
-  shell. The worked example was written by Claude, an AI
+- The count-session transcript is the output of `git` and
+  `wc`, run from a shell. The worked example was written by Claude, an AI
   model, while it prepared this release, by reading
   `SKILL.md`; the skill was not installed, loaded or invoked
   for it.
 - Whether an agent that reads `SKILL.md` groups, orders and
-  summarises changes well, or stops at the approval section,
-  has not been measured.
+  summarises changes well has not been measured.
 - No test checks a plan written by an agent that invoked
   the skill. The plan the tests check is the worked
   example.
 - Neither install block below was run, from a shell or in
-  a Claude Code or Codex session.
+  a Claude Code or Codex session. The agent invocations
+  loaded the skill from a plugin directory (Claude Code) and
+  from a repository's `.agents/skills/` (Codex), not through
+  the install blocks.
 
 ## What the claim covers
 
@@ -222,6 +224,10 @@ are known limits, not findings:
 - The instruction not to stage, commit or push is text.
   Nothing in this repository enforces it; an agent that has
   permission to run `git` can still commit.
+- In one unpublished Codex run, the agent searched the
+  parent directory for `AGENTS.md`, outside the repository it
+  was told to stay in; step 1 does not say where to look for
+  agent instructions.
 
 ## Use it
 
@@ -237,7 +243,7 @@ fails.
 
 ```sh
 set -eu
-release=v0.1.0
+release=v0.1.1
 install_target="$HOME/.claude/skills/plan-commits"
 install_parent="$(dirname "$install_target")"
 mkdir -p "$install_parent"
@@ -274,7 +280,7 @@ the block above is `install_target`.
 
 ```sh
 set -eu
-release=v0.1.0
+release=v0.1.1
 install_target="$HOME/.agents/skills/plan-commits"
 install_parent="$(dirname "$install_target")"
 mkdir -p "$install_parent"
@@ -338,9 +344,52 @@ example, of each fixture file, of the recording script and of
 the transcript, with the commands, the `git` version and the
 date.
 
-No agent invoked the skill. The worked-example plan was
-written by Claude during release preparation and is
-illustrative, not evidence that the skill ran.
+No agent invoked the skill for the count session or the
+worked example. The worked-example plan was written by
+Claude during release preparation and is illustrative, not
+evidence that the skill ran.
+
+### Agent invocations
+
+Each client was started once, with the v0.1.0 skill text
+(unchanged in v0.1.1), on one synthetic fixture: a one-file
+Python repository with one commit and three uncommitted
+changes, a modified tracked file, a new staged file and a
+new untracked file, so that `git diff --numstat`,
+`git diff --cached --numstat` and `wc -l` each apply. The
+prompt asked for a commit plan for the working tree. This is
+one run per client on one fixture, not a benchmark.
+
+- [`evidence/transcripts/2026-10-08-claude-code-invocation.txt`](evidence/transcripts/2026-10-08-claude-code-invocation.txt):
+  Claude Code 2.1.220, invoked with `/plan-commits`. It
+  loaded the skill, ran the counting commands, wrote a
+  three-commit plan whose counts match those commands, and
+  stopped at the approval section.
+- [`evidence/transcripts/2026-10-08-codex-invocation.txt`](evidence/transcripts/2026-10-08-codex-invocation.txt):
+  Codex 0.146.0, invoked with `$plan-commits`. It read
+  `SKILL.md`, ran the same commands, wrote a three-commit
+  plan with the same counts, and stopped at the approval
+  section. It is a re-run in a fresh temporary directory;
+  an earlier Codex run searched outside the fixture and is
+  listed in the manifest as not published.
+
+After each run, `git log` and `git status` in the fixture
+showed nothing committed or staged beyond the starting
+state. The runs do not show how an agent handles the cases
+under Known limits, or what it does after approval.
+
+[`scripts/render_invocation.py`](scripts/render_invocation.py)
+renders each transcript from the client's raw JSON output,
+which is not committed; its SHA-256 is in the manifest. It
+writes the prompt, each tool call's name, arguments and
+status, and the final message verbatim, and cuts any
+argument longer than 300 characters, marking the cut
+`...[N more characters]`. Its only edits are path and name
+replacements, each declared in the manifest:
+`replace-isolation-root` (Codex only, applied first),
+`replace-plugin-root`, `replace-capture-root`,
+`replace-scratch-root`, `replace-home` and
+`replace-hostname`.
 
 `make check` runs two suites.
 [`tests/test_worked_example.py`](tests/test_worked_example.py)
