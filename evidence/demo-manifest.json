@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-08",
+  "skill": {
+    "path": "skills/plan-commits/SKILL.md",
+    "sha256": "8c835775f1f349aa1ce634800c9362f6368eb446ce2f1a0bb84db39f83a478de"
+  },
+  "interface": {
+    "path": "skills/plan-commits/agents/openai.yaml",
+    "sha256": "8d5951ff88256321b1d7552add74d25dbc39d0fcc58d71e5c019c70fc87fe309"
+  },
+  "worked_example": {
+    "path": "examples/worked-example.md",
+    "sha256": "eed0cd713639102b812483cd7d7d6dd60e1a9b01d65afb3936a1c6a591a9c17f"
+  },
+  "fixture": [
+    {
+      "path": "examples/fixture/after/README.md",
+      "sha256": "647569768c91f11e31a2434feb80985de76c65023f4bf4229c96ac70147f2e20"
+    },
+    {
+      "path": "examples/fixture/after/cli.py",
+      "sha256": "03f8f98ad90aa8103d19fd7c0750769eac0fa36d13a7e90c0354584dd8956602"
+    },
+    {
+      "path": "examples/fixture/after/slugify.py",
+      "sha256": "5c7925135927b7401629646e7697fb04eda8c6ec0b0c6b0533b85b753cb326de"
+    },
+    {
+      "path": "examples/fixture/after/tests/test_slugify.py",
+      "sha256": "187195d6db7ea6ee13bf48e1c35e9a0f078778f4357f959d4d96e18d9d9e5f00"
+    },
+    {
+      "path": "examples/fixture/before/README.md",
+      "sha256": "bc45c73b03cafd8c84dbcaa8b08f99e6a8b6885a36edf46ce593be657090bb14"
+    },
+    {
+      "path": "examples/fixture/before/cli.py",
+      "sha256": "07f12cb2281eefbe2c0d1f368e7be23d8771e38a205106171a2c4b787aa17e72"
+    },
+    {
+      "path": "examples/fixture/before/slugify.py",
+      "sha256": "04ae3c1c71aee662f682c99c92d516ee6f50cd6afa359ff9d0276e043e2b24ed"
+    }
+  ],
+  "programs": [
+    {
+      "path": "scripts/record_session.py",
+      "sha256": "8f8f9f068ccf428233441db34578fa91bd4ecc0a3f85faf2ab3cbf9444718091"
+    }
+  ],
+  "agent": {
+    "invoked_the_skill": false,
+    "note": "No agent invoked plan-commits to produce this evidence. The transcript is the output of git and wc, run from a shell by scripts/record_session.py while this release was being prepared. The worked example was written by Claude, an AI model, while it prepared this release, by reading SKILL.md and applying it to that transcript and the fixture; the skill was not installed, loaded or invoked for it."
+  },
+  "invocation": {
+    "commands": [
+      "git status --porcelain=v1 --untracked-files=all",
+      "git diff --numstat",
+      "wc -l tests/test_slugify.py"
+    ],
+    "git": "git version 2.50.1 (Apple Git-155)",
+    "working_directory": "a throwaway git repository built by scripts/record_session.py: the files under examples/fixture/before/ committed, then replaced by the files under examples/fixture/after/"
+  },
+  "output": {
+    "path": "evidence/transcripts/count-session.txt",
+    "sha256": "af599a7fffbadf81eebf1e8c70ffb05b00874f61a16474d3078633e5148d2135",
+    "edited": false,
+    "transforms": [],
+    "note": "scripts/record_session.py wrote each command line, each echo line (which is written, not run) and each exit status line from the command's exit status; everything between is the output of git or wc, unedited."
+  }
+}

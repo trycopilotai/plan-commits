@@ -1,0 +1,17 @@
+$ git status --porcelain=v1 --untracked-files=all
+ M README.md
+ M cli.py
+ M slugify.py
+?? tests/test_slugify.py
+$ echo "exit status: $?"
+exit status: 0
+$ git diff --numstat
+3	0	README.md
+4	4	cli.py
+5	2	slugify.py
+$ echo "exit status: $?"
+exit status: 0
+$ wc -l tests/test_slugify.py
+      15 tests/test_slugify.py
+$ echo "exit status: $?"
+exit status: 0

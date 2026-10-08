@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>plan-commits</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1280px;
+        height: 640px;
+        background: #101418;
+      }
+      body {
+        box-sizing: border-box;
+        padding: 72px 80px;
+        color: #f7fbff;
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .name {
+        font-size: 44px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+      .line {
+        margin-top: 36px;
+        font-size: 30px;
+        line-height: 1.4;
+        color: #a7bac5;
+      }
+      .detail {
+        margin-top: 44px;
+        font-size: 24px;
+        line-height: 1.6;
+      }
+      .note {
+        color: #ffd166;
+      }
+      .foot {
+        position: absolute;
+        left: 80px;
+        bottom: 56px;
+        font-size: 22px;
+        color: #a7bac5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="name">plan-commits</div>
+    <div class="line">
+      Line counts come from git diff --numstat and wc -l.
+    </div>
+    <div class="detail">
+      <div>Granular commit plans, ending in an approval section.</div>
+      <div class="note">No agent invocation is evidenced.</div>
+    </div>
+    <div class="foot">trycopilot.ai · agent skill · MIT</div>
+  </body>
+</html>

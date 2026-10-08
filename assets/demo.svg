@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="560" viewBox="0 0 1280 560" role="img" aria-labelledby="title description">
+  <title id="title">Animated counting session of the plan-commits worked example</title>
+  <desc id="description">In a synthetic repository, a terminal runs git status, git diff --numstat, and wc -l on the one untracked file, and prints the files and line counts they report. Each command exits with status 0. No agent is invoked.</desc>
+  <style>
+    .step-1 {
+      opacity: 0;
+      animation: reveal-1 12s infinite;
+    }
+    @keyframes reveal-1 {
+      0%, 6% { opacity: 0; }
+      10%, 94% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .step-2 {
+      opacity: 0;
+      animation: reveal-2 12s infinite;
+    }
+    @keyframes reveal-2 {
+      0%, 40% { opacity: 0; }
+      44%, 94% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .step-3 {
+      opacity: 0;
+      animation: reveal-3 12s infinite;
+    }
+    @keyframes reveal-3 {
+      0%, 74% { opacity: 0; }
+      78%, 94% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .step-1, .step-2, .step-3 {
+        opacity: 1;
+        animation: none;
+      }
+    }
+  </style>
+  <rect width="1280" height="560" rx="24" fill="#101418" />
+  <circle cx="40" cy="44" r="9" fill="#ff6b6b" />
+  <circle cx="70" cy="44" r="9" fill="#ffd166" />
+  <circle cx="100" cy="44" r="9" fill="#55d6be" />
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">
+    <g class="step-1">
+      <text x="40" y="108" fill="#f7fbff" xml:space="preserve">$ git status --porcelain=v1 --untracked-files=all</text>
+      <text x="40" y="134" fill="#a7bac5" xml:space="preserve"> M README.md</text>
+      <text x="40" y="160" fill="#a7bac5" xml:space="preserve"> M cli.py</text>
+      <text x="40" y="186" fill="#a7bac5" xml:space="preserve"> M slugify.py</text>
+      <text x="40" y="212" fill="#a7bac5" xml:space="preserve">?? tests/test_slugify.py</text>
+      <text x="40" y="238" fill="#55d6be" xml:space="preserve">exit status: 0</text>
+    </g>
+    <g class="step-2">
+      <text x="40" y="278" fill="#f7fbff" xml:space="preserve">$ git diff --numstat</text>
+      <text x="40" y="304" fill="#a7bac5" xml:space="preserve">3       0       README.md</text>
+      <text x="40" y="330" fill="#a7bac5" xml:space="preserve">4       4       cli.py</text>
+      <text x="40" y="356" fill="#a7bac5" xml:space="preserve">5       2       slugify.py</text>
+      <text x="40" y="382" fill="#55d6be" xml:space="preserve">exit status: 0</text>
+    </g>
+    <g class="step-3">
+      <text x="40" y="422" fill="#f7fbff" xml:space="preserve">$ wc -l tests/test_slugify.py</text>
+      <text x="40" y="448" fill="#a7bac5" xml:space="preserve">      15 tests/test_slugify.py</text>
+      <text x="40" y="474" fill="#55d6be" xml:space="preserve">exit status: 0</text>
+    </g>
+  </g>
+  <text x="40" y="532" fill="#a7bac5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15">Recorded output, from evidence/transcripts/count-session.txt</text>
+</svg>
