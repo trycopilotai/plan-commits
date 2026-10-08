@@ -40,15 +40,18 @@ is the [worked example](examples/worked-example.md).
 **Not measured, stated up front.**
 
 - The count-session transcript is the output of `git` and
-  `wc`, run from a shell. The worked example was written by Claude, an AI
-  model, while it prepared this release, by reading
-  `SKILL.md`; the skill was not installed, loaded or invoked
-  for it.
+  `wc`, run from a shell. The worked example was written by
+  Claude, an AI model, while it prepared this release, by
+  reading `SKILL.md`; the skill was not installed, loaded or
+  invoked for it.
 - Whether an agent that reads `SKILL.md` groups, orders and
   summarises changes well has not been measured.
-- No test checks a plan written by an agent that invoked
-  the skill. The plan the tests check is the worked
-  example.
+- No test checks the counts, groups or summaries of a plan
+  written by an agent that invoked the skill. The plan the
+  tests check that way is the worked example; for the two
+  agent invocations, the tests check only that each
+  transcript ends at the approval section and that no
+  recorded call runs `git add`, `git commit` or `git push`.
 - Neither install block below was run, from a shell or in
   a Claude Code or Codex session. The agent invocations
   loaded the skill from a plugin directory (Claude Code) and
@@ -88,8 +91,9 @@ from. It is not a claim that an agent copies them correctly.
 
 The skill package is `SKILL.md` and `agents/openai.yaml`. It
 holds no program.
-The repository around it also holds Python scripts that record
-the transcript, build and check the images, and test the
+The repository around it also holds Python scripts that
+record the transcript, render the agent invocation
+transcripts, build and check the images, and test the
 repository. They are not part of the skill, and neither
 install block copies them.
 
@@ -243,7 +247,7 @@ fails.
 
 ```sh
 set -eu
-release=v0.1.1
+release=v0.1.2
 install_target="$HOME/.claude/skills/plan-commits"
 install_parent="$(dirname "$install_target")"
 mkdir -p "$install_parent"
@@ -280,7 +284,7 @@ the block above is `install_target`.
 
 ```sh
 set -eu
-release=v0.1.1
+release=v0.1.2
 install_target="$HOME/.agents/skills/plan-commits"
 install_parent="$(dirname "$install_target")"
 mkdir -p "$install_parent"
@@ -351,14 +355,16 @@ evidence that the skill ran.
 
 ### Agent invocations
 
-Each client was started once, with the v0.1.0 skill text
-(unchanged in v0.1.1), on one synthetic fixture: a one-file
-Python repository with one commit and three uncommitted
-changes, a modified tracked file, a new staged file and a
-new untracked file, so that `git diff --numstat`,
-`git diff --cached --numstat` and `wc -l` each apply. The
-prompt asked for a commit plan for the working tree. This is
-one run per client on one fixture, not a benchmark.
+Claude Code was started once and Codex twice, with the
+v0.1.0 skill text (unchanged since), on one synthetic
+fixture: a one-file Python repository with one commit and
+three uncommitted changes, a modified tracked file, a new
+staged file and a new untracked file, so that
+`git diff --numstat`, `git diff --cached --numstat` and
+`wc -l` each apply. The
+prompt asked for a commit plan for the working tree. One run
+per client is published, on one fixture; it is
+not a benchmark.
 
 - [`evidence/transcripts/2026-10-08-claude-code-invocation.txt`](evidence/transcripts/2026-10-08-claude-code-invocation.txt):
   Claude Code 2.1.220, invoked with `/plan-commits`. It
@@ -369,9 +375,10 @@ one run per client on one fixture, not a benchmark.
   Codex 0.146.0, invoked with `$plan-commits`. It read
   `SKILL.md`, ran the same commands, wrote a three-commit
   plan with the same counts, and stopped at the approval
-  section. It is a re-run in a fresh temporary directory;
-  an earlier Codex run searched outside the fixture and is
-  listed in the manifest as not published.
+  section. It is the second Codex run, made in a fresh
+  temporary directory; the first Codex run searched outside
+  the fixture and is listed in the manifest, with its raw
+  output's SHA-256, as not published.
 
 After each run, `git log` and `git status` in the fixture
 showed nothing committed or staged beyond the starting

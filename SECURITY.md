@@ -44,12 +44,19 @@ private channel.
   and writes none. `assets/build.py` finds a Chrome or
   Chromium binary from a fixed candidate list, runs it
   headless with a temporary profile directory, and writes the
-  preview PNG and its stamp. `tests/test_worked_example.py`
+  preview PNG and its stamp.
+  `scripts/render_invocation.py` reads a client's raw JSON
+  output and a prompt file, both named on its command line,
+  and writes a transcript to standard output; it runs
+  nothing and writes no file. `tests/test_worked_example.py`
   reads files. `tests/test_integrations.py` runs `git`
   against the repository root, builds the fixture repository
   and runs the manifest's commands in a temporary directory
-  the way the recording script does, and loads the two demo
-  scripts to compare the images with the transcript.
+  the way the recording script does, loads the two demo
+  scripts to compare the images with the transcript, and
+  runs `scripts/render_invocation.py` with the current
+  Python on small JSON inputs it writes to a temporary
+  directory.
 
 ## What the skill tells an agent to do
 

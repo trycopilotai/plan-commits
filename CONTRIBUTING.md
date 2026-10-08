@@ -1,8 +1,9 @@
 # Contributing
 
 This repository is one skill, a worked example for it, and
-the scripts that record the evidence transcript, build and
-check the demo images, and test the repository.
+the scripts that record the evidence transcript, render the
+agent invocation transcripts, build and check the demo
+images, and test the repository.
 
 ## Run the checks first
 
