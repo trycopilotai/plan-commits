@@ -5,13 +5,19 @@ the uncommitted changes in a git repository: logical groups
 labelled `mechanical` or `semantic`, and for every file a
 summary and its added, updated and deleted line counts,
 taken from `git diff --numstat` or `wc -l` (see Known
-limits). The plan ends with an approval section for the
-operator, and the skill text tells the agent not to stage or
-commit anything.
+limits).
+
+---
 
 [![auto-lint-pr](https://github.com/trycopilotai/plan-commits/actions/workflows/auto-lint-pr.yml/badge.svg)](https://github.com/trycopilotai/plan-commits/actions/workflows/auto-lint-pr.yml)
 [![check](https://github.com/trycopilotai/plan-commits/actions/workflows/check.yml/badge.svg)](https://github.com/trycopilotai/plan-commits/actions/workflows/check.yml)
 [![lint](https://github.com/trycopilotai/plan-commits/actions/workflows/lint.yml/badge.svg)](https://github.com/trycopilotai/plan-commits/actions/workflows/lint.yml)
+
+---
+
+The plan ends with an approval section for the operator, and
+the skill text tells the agent not to stage or commit
+anything.
 
 Line counts come from git diff --numstat and wc -l.
 
