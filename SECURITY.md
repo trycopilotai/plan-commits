@@ -19,10 +19,10 @@ private channel.
 
 - **Prompt content that redirects an agent.** `SKILL.md` is
   instructions an agent may follow. Text in it that makes an
-  agent send data to a place the operator did not name, write
-  outside the repository it was started in other than to a
-  path the operator names, or stage, commit or push, is a
-  valid report.
+  agent send data to a place the operator did not name,
+  write outside the repository it was started in other than
+  to a path the operator names, or stage, commit or push, is
+  a valid report.
 - **The install blocks.** The two README blocks run
   `mkdir -p`, `mktemp -d`, `git clone`, `cp`, `mv` and
   `rm -rf`, all inside one skills directory under `$HOME`. A
@@ -37,27 +37,26 @@ private channel.
   turned off, then runs each command listed in
   `evidence/demo-manifest.json` through `sh` in that
   directory. If every command exits 0, it rewrites the
-  transcript and the manifest.
-  With `RECORD_RAW_DIR` set it also writes a copy of the
-  capture into that directory. `scripts/generate_demo.py`
-  writes two SVG files; `scripts/verify_demo.py` reads files
-  and writes none. `assets/build.py` finds a Chrome or
-  Chromium binary from a fixed candidate list, runs it
-  headless with a temporary profile directory, and writes the
-  preview PNG and its stamp.
-  `scripts/render_invocation.py` reads a client's raw JSON
-  output and a prompt file, both named on its command line,
-  writes a transcript to standard output and, with
+  transcript and the manifest. With `RECORD_RAW_DIR` set it
+  also writes a copy of the capture into that directory.
+  `scripts/generate_demo.py` writes two SVG files;
+  `scripts/verify_demo.py` reads files and writes none.
+  `assets/build.py` finds a Chrome or Chromium binary from a
+  fixed candidate list, runs it headless with a temporary
+  profile directory, and writes the preview PNG and its
+  stamp. `scripts/render_invocation.py` reads a client's raw
+  JSON output and a prompt file, both named on its command
+  line, writes a transcript to standard output and, with
   `--calls-out`, the tool calls to the file that option
-  names; it runs nothing else and writes no other file. `tests/test_worked_example.py`
-  reads files. `tests/test_integrations.py` runs `git`
-  against the repository root, builds the fixture repository
-  and runs the manifest's commands in a temporary directory
-  the way the recording script does, loads the two demo
-  scripts to compare the images with the transcript, and
-  runs `scripts/render_invocation.py` with the current
-  Python on small JSON inputs it writes to a temporary
-  directory.
+  names; it runs nothing else and writes no other file.
+  `tests/test_worked_example.py` reads files.
+  `tests/test_integrations.py` runs `git` against the
+  repository root, builds the fixture repository and runs
+  the manifest's commands in a temporary directory the way
+  the recording script does, loads the two demo scripts to
+  compare the images with the transcript, and runs
+  `scripts/render_invocation.py` with the current Python on
+  small JSON inputs it writes to a temporary directory.
 
 ## What the skill tells an agent to do
 
@@ -67,9 +66,9 @@ whether to use it. They are known limits, not findings:
 - `SKILL.md` tells the agent to run `git status`,
   `git diff --numstat`, `git diff --cached --numstat`,
   `wc -l` and to read the diff, all in the repository it is
-  planning for. `wc -l` on an untracked
-  symbolic link follows it, so it can read a file outside
-  the repository; the README's known limits say so.
+  planning for. `wc -l` on an untracked symbolic link
+  follows it, so it can read a file outside the repository;
+  the README's known limits say so.
 - It tells the agent to read the repository's agent
   instructions, for example `AGENTS.md`, and follow the
   commit rules they give. What those instructions say is up

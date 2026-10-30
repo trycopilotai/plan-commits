@@ -31,5 +31,7 @@ jobs:
 
       # No install step on purpose. Both suites need no
       # Python package outside the standard library.
-      - name: Run the worked-example suite and the repository suite
+      - name:
+          Run the worked-example suite and the repository
+          suite
         run: make check

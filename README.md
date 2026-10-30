@@ -1,20 +1,21 @@
 # plan-commits
 
-A skill that has a coding agent plan granular commits for the
-uncommitted changes in a git repository: logical groups
+A skill that has a coding agent plan granular commits for
+the uncommitted changes in a git repository: logical groups
 labelled `mechanical` or `semantic`, and for every file a
-summary and its added, updated and deleted line counts, taken
-from `git diff --numstat` or `wc -l` (see Known limits). The
-plan ends with an approval section for the operator, and the
-skill text tells the agent not to stage or commit anything.
+summary and its added, updated and deleted line counts,
+taken from `git diff --numstat` or `wc -l` (see Known
+limits). The plan ends with an approval section for the
+operator, and the skill text tells the agent not to stage or
+commit anything.
 
 Line counts come from git diff --numstat and wc -l.
 
-No agent invoked the skill for the demo below: it is
-the output of `git` and `wc` in a synthetic repository, and
-a plan that Claude, an AI model, wrote from that output
-during release preparation. Two agent invocations are
-recorded separately, under Evidence.
+No agent invoked the skill for the demo below: it is the
+output of `git` and `wc` in a synthetic repository, and a
+plan that Claude, an AI model, wrote from that output during
+release preparation. Two agent invocations are recorded
+separately, under Evidence.
 
 <picture>
   <source
@@ -32,10 +33,9 @@ The demo is reconstructed from
 [`evidence/transcripts/count-session.txt`](evidence/transcripts/count-session.txt),
 the recorded output of three of the `git` and `wc` commands
 that steps 1 and 2 of `SKILL.md` name, in a synthetic
-repository.
-`scripts/record_session.py` wrote its `$` lines and its
-`exit status` lines. The plan written from those counts
-is the [worked example](examples/worked-example.md).
+repository. `scripts/record_session.py` wrote its `$` lines
+and its `exit status` lines. The plan written from those
+counts is the [worked example](examples/worked-example.md).
 
 **Not measured, stated up front.**
 
@@ -48,39 +48,40 @@ is the [worked example](examples/worked-example.md).
   summarises changes well has not been measured.
 - No test checks the counts, groups or summaries of a plan
   written by an agent that invoked the skill. The plan the
-  tests check that way is the worked example. What the
-  tests do check of the two agent invocations is listed
-  under Agent invocations.
-- Neither install block below was run, from a shell or in
-  a Claude Code or Codex session. The agent invocations
-  loaded the skill from a plugin directory (Claude Code) and
-  from a repository's `.agents/skills/` (Codex), not through
-  the install blocks.
+  tests check that way is the worked example. What the tests
+  do check of the two agent invocations is listed under
+  Agent invocations.
+- Neither install block below was run, from a shell or in a
+  Claude Code or Codex session. The agent invocations loaded
+  the skill from a plugin directory (Claude Code) and from a
+  repository's `.agents/skills/` (Codex), not through the
+  install blocks.
 
 ## What the claim covers
 
-`SKILL.md` step 2 tells the agent to take each changed file's
-added and deleted line counts from `git diff --numstat`; a
-new file's line count from `git diff --cached --numstat` if
-it is staged or from `wc -l` if it is untracked; not to
-write approximate counts; and to prefer exact numbers. The
-one exception it gives is a gitlink, which it records as 0
-lines added. Known limits lists the
-cases those commands do not cover. The transcript shows the output
-of `git diff --numstat` and `wc -l` in the synthetic
-repository, which has no staged file, and
+`SKILL.md` step 2 tells the agent to take each changed
+file's added and deleted line counts from
+`git diff --numstat`; a new file's line count from
+`git diff --cached --numstat` if it is staged or from
+`wc -l` if it is untracked; not to write approximate counts;
+and to prefer exact numbers. The one exception it gives is a
+gitlink, which it records as 0 lines added. Known limits
+lists the cases those commands do not cover. The transcript
+shows the output of `git diff --numstat` and `wc -l` in the
+synthetic repository, which has no staged file, and
 [`tests/test_worked_example.py`](tests/test_worked_example.py)
 checks that each count in the worked example's plan equals
-the number the transcript gives for that file. The claim is about where the counts come
-from. It is not a claim that an agent copies them correctly.
+the number the transcript gives for that file. The claim is
+about where the counts come from. It is not a claim that an
+agent copies them correctly.
 
 ## What is in it
 
 - [`skills/plan-commits/SKILL.md`](skills/plan-commits/SKILL.md)
-  is the skill: read context, collect diffs and counts, group
-  commits, detail each file, render the plan, save it if
-  asked, and stop for approval. It includes the plan's output
-  format and its approval section.
+  is the skill: read context, collect diffs and counts,
+  group commits, detail each file, render the plan, save it
+  if asked, and stop for approval. It includes the plan's
+  output format and its approval section.
 - [`skills/plan-commits/agents/openai.yaml`](skills/plan-commits/agents/openai.yaml)
   is the Codex interface file.
 - [`examples/worked-example.md`](examples/worked-example.md)
@@ -89,11 +90,10 @@ from. It is not a claim that an agent copies them correctly.
   [`examples/fixture/`](examples/fixture/).
 
 The skill package is `SKILL.md` and `agents/openai.yaml`. It
-holds no program.
-The repository around it also holds Python scripts that
-record the transcript, render the agent invocation
-transcripts, build and check the images, and test the
-repository. They are not part of the skill, and neither
+holds no program. The repository around it also holds Python
+scripts that record the transcript, render the agent
+invocation transcripts, build and check the images, and test
+the repository. They are not part of the skill, and neither
 install block copies them.
 
 ## Not included
@@ -108,11 +108,11 @@ install block copies them.
   [github.com/trycopilotai/swe-day](https://github.com/trycopilotai/swe-day),
   and is not part of this repository. plan-commits does not
   need it: without it, invoke plan-commits directly.
-- **A commit step.** The skill does not commit. Committing an
-  approved plan is left to the operator or to a caller acting
-  on the operator's approval; step 7 of `SKILL.md` says how
-  the plan is meant to be used for that. No program here does
-  it.
+- **A commit step.** The skill does not commit. Committing
+  an approved plan is left to the operator or to a caller
+  acting on the operator's approval; step 7 of `SKILL.md`
+  says how the plan is meant to be used for that. No program
+  here does it.
 - **`git` and `wc`.** The skill tells the agent to run them.
   They are not shipped here.
 
@@ -148,12 +148,11 @@ the protocol's seven numbered steps. Against the protocol:
 - step 7 changes what the agent does. The protocol's step
   told the agent, when instructed, to stage each group (with
   `git add -p` if needed), commit it, and verify a clean
-  status. Now the
-  plan ends with an approval section, the agent stops there,
-  and it is told not to stage, commit or push, "even when a
-  group looks safe to commit", and that this stop applies
-  even when the repository's instructions say to commit
-  after planning. The approval section is new.
+  status. Now the plan ends with an approval section, the
+  agent stops there, and it is told not to stage, commit or
+  push, "even when a group looks safe to commit", and that
+  this stop applies even when the repository's instructions
+  say to commit after planning. The approval section is new.
 - step 7 also gives guidance to whoever commits after
   approval: stage one entry at a time, using `git add -p`
   where a file's lines belong to more than one entry, from
@@ -183,9 +182,8 @@ are known limits, not findings:
 - For a binary file, `git diff --numstat` prints `-` in
   place of both counts. `SKILL.md` does not say what to
   record then.
-- `wc -l` counts newline characters, so a new untracked
-  file whose last line has no newline is reported one line
-  short.
+- `wc -l` counts newline characters, so a new untracked file
+  whose last line has no newline is reported one line short.
 - For a submodule whose pointer moved, `git diff --numstat`
   prints `1` added and `1` deleted, while step 2 says to
   record a gitlink as 0 lines added. For a new submodule,
@@ -210,8 +208,8 @@ are known limits, not findings:
 - For a new untracked binary file, `wc -l` counts newline
   bytes, which are not lines of source.
 - A change of file mode only, for example making a file
-  executable, shows as `0` added and `0` deleted.
-  `SKILL.md` does not say how to describe it.
+  executable, shows as `0` added and `0` deleted. `SKILL.md`
+  does not say how to describe it.
 - Step 7 lets one file's lines go to more than one entry,
   staged with `git add -p`. `git diff --numstat` and `wc -l`
   count whole files, and `SKILL.md` does not say how to
@@ -228,9 +226,9 @@ are known limits, not findings:
   Nothing in this repository enforces it; an agent that has
   permission to run `git` can still commit.
 - In one unpublished Codex run, the agent searched the
-  parent directory for `AGENTS.md`, outside the repository it
-  was told to stay in; step 1 does not say where to look for
-  agent instructions.
+  parent directory for `AGENTS.md`, outside the repository
+  it was told to stay in; step 1 does not say where to look
+  for agent instructions.
 
 ## Use it
 
@@ -314,8 +312,8 @@ rm -rf "$install_tmp"
 The name to invoke is `$plan-commits`.
 
 Each block works in a temporary `.plan-commits.*` directory
-beside the target and removes it on exit. An existing install
-at the target is replaced.
+beside the target and removes it on exit. An existing
+install at the target is replaced.
 
 Both blocks copy through `skill/`, a symlink to
 `skills/plan-commits/`, so the installed directory holds
@@ -342,10 +340,10 @@ the `echo` lines among them are written, not run. The rest
 is the output of `git` and `wc`. The transcript is not
 edited: no path or host name appears in that output, so
 there was nothing to replace. The manifest records the
-SHA-256 of `SKILL.md`, of `agents/openai.yaml`, of the worked
-example, of each fixture file, of the recording script and of
-the transcript, with the commands, the `git` version and the
-date.
+SHA-256 of `SKILL.md`, of `agents/openai.yaml`, of the
+worked example, of each fixture file, of the recording
+script and of the transcript, with the commands, the `git`
+version and the date.
 
 No agent invoked the skill for the count session or the
 worked example. The worked-example plan was written by
@@ -360,10 +358,9 @@ fixture: a one-file Python repository with one commit and
 three uncommitted changes, a modified tracked file, a new
 staged file and a new untracked file, so that
 `git diff --numstat`, `git diff --cached --numstat` and
-`wc -l` each apply. The
-prompt asked for a commit plan for the working tree. One run
-per client is published, on one fixture; it is
-not a benchmark.
+`wc -l` each apply. The prompt asked for a commit plan for
+the working tree. One run per client is published, on one
+fixture; it is not a benchmark.
 
 - [`evidence/transcripts/2026-10-08-claude-code-invocation.txt`](evidence/transcripts/2026-10-08-claude-code-invocation.txt):
   Claude Code 2.1.220, invoked with `/plan-commits`. It
@@ -415,10 +412,10 @@ replacements; the manifest records its SHA-256.
 The repository suite checks these things about the
 invocations:
 
-- the manifest lists one published run per client, each
-  with a version, model, outcome, raw-output SHA-256, the
-  renderer's path and the transform names, and a prompt
-  that holds the invocation text and asks the agent to stay
+- the manifest lists one published run per client, each with
+  a version, model, outcome, raw-output SHA-256, the
+  renderer's path and the transform names, and a prompt that
+  holds the invocation text and asks the agent to stay
   inside the directory;
 - the unpublished run has a raw-output SHA-256 and an
   outcome, and no transcript;
@@ -431,13 +428,12 @@ invocations:
   heading contains `Status: awaiting operator approval.`;
   the test does not check where in the message it falls;
 - each `.calls.json` file lists the same calls as its
-  transcript, and each cut argument is the start of the
-  full one;
+  transcript, and each cut argument is the start of the full
+  one;
 - no call's full arguments contain `git add`, `git commit`
   or `git push`;
-- no transcript or `.calls.json` file contains a path
-  under a home directory, `/private/`, `/var/folders/` or
-  `/tmp/`;
+- no transcript or `.calls.json` file contains a path under
+  a home directory, `/private/`, `/var/folders/` or `/tmp/`;
 - this section links both transcripts and names each
   transform, and the manifest's rendering note names the
   renderer's cut length.
@@ -449,15 +445,15 @@ status, the cut and the `.calls.json` output.
 `make check` runs two suites.
 [`tests/test_worked_example.py`](tests/test_worked_example.py)
 checks the worked example's counts, file coverage, labels,
-mechanical-last order, `Regen` command, quoted transcript and
-approval section against the transcript, the fixture and
+mechanical-last order, `Regen` command, quoted transcript
+and approval section against the transcript, the fixture and
 `SKILL.md`.
 [`tests/test_integrations.py`](tests/test_integrations.py)
-ties this file, both plugin manifests, the evidence manifest,
-the transcript, the demo images and the social preview to
-each other, and
-rebuilds the synthetic repository to check that the commands
-still print what the transcript shows, up to spacing.
+ties this file, both plugin manifests, the evidence
+manifest, the transcript, the demo images and the social
+preview to each other, and rebuilds the synthetic repository
+to check that the commands still print what the transcript
+shows, up to spacing.
 
 ## Contributing
 
