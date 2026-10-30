@@ -9,6 +9,10 @@ limits). The plan ends with an approval section for the
 operator, and the skill text tells the agent not to stage or
 commit anything.
 
+[![auto-lint-pr](https://github.com/trycopilotai/plan-commits/actions/workflows/auto-lint-pr.yml/badge.svg)](https://github.com/trycopilotai/plan-commits/actions/workflows/auto-lint-pr.yml)
+[![check](https://github.com/trycopilotai/plan-commits/actions/workflows/check.yml/badge.svg)](https://github.com/trycopilotai/plan-commits/actions/workflows/check.yml)
+[![lint](https://github.com/trycopilotai/plan-commits/actions/workflows/lint.yml/badge.svg)](https://github.com/trycopilotai/plan-commits/actions/workflows/lint.yml)
+
 Line counts come from git diff --numstat and wc -l.
 
 No agent invoked the skill for the demo below: it is the
